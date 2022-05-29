@@ -36,7 +36,7 @@ class ecommerce_db:
                 FOREIGN KEY(category_id) REFERENCES categories(category_id)
                 )"""
 
-        self.create_ucart_table = """CREATE TABLE IF NOT EXISTS ucart
+        self.create_cart_table = """CREATE TABLE IF NOT EXISTS cart
                 (user_id INTEGER,
                 product_id INTEGER,
                 FOREIGN KEY(user_id) REFERENCES users(user_id),

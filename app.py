@@ -30,7 +30,7 @@ def get_login_info():
             q = "SELECT user_id, first_name FROM users WHERE email = ?"
             my_ecommerce_db.execute_query(q, (session['email'], ))
             user_id, first_name = my_ecommerce_db.cursor.fetchone()
-            q = "SELECT count(product_id) FROM ucart WHERE user_id = ?"
+            q = "SELECT count(product_id) FROM cart WHERE user_id = ?"
             my_ecommerce_db.execute_query(q, (user_id, ))
             num_items = my_ecommerce_db.cursor.fetchone()[0]
 
@@ -269,6 +269,62 @@ def cart():
     my_ecommerce_db.close_connection()
 
     return render_template("cart.html", products = products, totalPrice=total_price, logged_in=logged_in, firstName=first_name, noOfItems=num_items)
+
+
+
+@app.route("/addToCart")
+def addToCart():
+    if 'email' not in session:
+        return redirect(url_for('login_form'))
+    else:
+        product_id = int(request.args.get('product_id'))
+
+        # db acces:
+        my_ecommerce_db.create_connection()
+        q = "SELECT user_id FROM users WHERE email = ?"
+        my_ecommerce_db.execute_query(q, params)
+        user_id = my_ecommerce_db.cursor.fetchone()[0]
+
+        try:
+            q = "INSERT INTO cart (user_id, product_id) VALUES (?, ?)"
+            params = (user_id, product_id)
+            my_ecommerce_db.execute_query(q, params)
+            message = "Added to cart successfully"
+        except:
+            my_ecommerce_db.connection.rollback()
+            message = "Error occured!"
+
+        my_ecommerce_db.close_connection()
+
+        return redirect(url_for('root'))
+
+
+@app.route("/removeFromCart")
+def removeFromCart():
+    if 'email' not in session:
+        return redirect(url_for('login_form'))
+
+    email = session['email']
+    product_id = int(request.args.get('product_id'))
+    
+    # db acces:
+    my_ecommerce_db.create_connection()
+    q = "SELECT user_id FROM users WHERE email = ?"
+    params = (email, )
+    user_id = my_ecommerce_db.cursor.fetchone()[0]
+
+        try:
+            q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
+            params = (user_id, product_id)
+            my_ecommerce_db.execute_query(q, params)
+            message = "Removed from cart successfully"
+        except:
+            my_ecommerce_db.connection.rollback()
+            message = "Error occured!"
+    
+    my_ecommerce_db.close_connection()
+
+    return redirect(url_for('root'))
 
 
 
