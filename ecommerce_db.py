@@ -66,6 +66,7 @@ class ecommerce_db:
         return self.connection
 
     def execute_query(self, query, params=None):
+        # print("Query, params:", query, params)
         self.cursor = self.connection.cursor()
         try:
             if params:

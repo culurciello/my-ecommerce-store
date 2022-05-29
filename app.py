@@ -116,6 +116,7 @@ def register():
 
         return render_template("login.html", message=msg)
 
+
 @app.route("/registration_form")
 def registration_form():
     return render_template("register.html")
@@ -240,6 +241,34 @@ def profile_update():
         logged_in, first_name, num_items = get_login_info()
 
         return render_template("profile_home.html", logged_in=logged_in, first_name=first_name, num_items=num_items)
+
+
+@app.route("/cart")
+def cart():
+    if 'email' not in session:
+        return redirect(url_for('login_form'))
+
+    logged_in, first_name, num_items = get_login_info()
+    email = session['email']
+
+    # db acces:
+    my_ecommerce_db.create_connection()
+    q = "SELECT user_id FROM users WHERE email = ?"
+    params = (email, )
+    my_ecommerce_db.execute_query(q, params)
+    user_id = my_ecommerce_db.cursor.fetchone()[0]
+
+    q = "SELECT products.productId, products.name, products.price, products.image FROM products, kart WHERE products.productId = kart.productId AND kart.userId = ?"
+    params = (user_id, )
+    my_ecommerce_db.execute_query(q, params)
+    products = my_ecommerce_db.cursor.fetchall()
+    total_price = 0
+    for row in products:
+        total_price += row[2]
+
+    my_ecommerce_db.close_connection()
+
+    return render_template("cart.html", products = products, totalPrice=total_price, logged_in=logged_in, firstName=first_name, noOfItems=num_items)
 
 
 
