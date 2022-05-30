@@ -109,14 +109,14 @@ def register():
             q = "INSERT INTO users (password, email, first_name, last_name, address1, address2, zipcode, city, state, country, phone) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             params = (hashlib.md5(password.encode()).hexdigest(), email, first_name, last_name, address1, address2, zipcode, city, state, country, phone)
             my_ecommerce_db.execute_query(q, params)
-            msg = "Registration Successfully"
+            message = "Registration Successfully"
         except:
             my_ecommerce_db.connection.rollback()
-            msg = "Registration Error!"
+            message = "Registration Error!"
 
         my_ecommerce_db.close_connection()
 
-        return render_template("login.html", message=msg)
+        return render_template("login.html", message=message)
 
 
 @app.route("/registration_form")
@@ -233,10 +233,10 @@ def profile_update():
             q = "UPDATE users SET first_name = ?, last_name = ?, address1 = ?, address2 = ?, zipcode = ?, city = ?, state = ?, country = ?, phone = ? WHERE email = ?"
             params = (first_name, last_name, address1, address2, zipcode, city, state, country, phone, email)
             my_ecommerce_db.execute_query(q, params)
-            msg = "Registration edit Successfully"
+            message = "Registration edit Successfully"
         except:
             my_ecommerce_db.connection.rollback()
-            msg = "Registration edit Error!"
+            message = "Registration edit Error!"
 
         my_ecommerce_db.close_connection()
 
@@ -249,28 +249,28 @@ def profile_update():
 def cart():
     if 'email' not in session:
         return redirect(url_for('login_form'))
+    else:
+        logged_in, first_name, num_items = get_login_info()
+        email = session['email']
 
-    logged_in, first_name, num_items = get_login_info()
-    email = session['email']
+        # db acces:
+        my_ecommerce_db.create_connection()
+        q = "SELECT user_id FROM users WHERE email = ?"
+        params = (email, )
+        my_ecommerce_db.execute_query(q, params)
+        user_id = my_ecommerce_db.cursor.fetchone()[0]
 
-    # db acces:
-    my_ecommerce_db.create_connection()
-    q = "SELECT user_id FROM users WHERE email = ?"
-    params = (email, )
-    my_ecommerce_db.execute_query(q, params)
-    user_id = my_ecommerce_db.cursor.fetchone()[0]
+        q = "SELECT products.product_id, products.name, products.price, products.image FROM products, cart WHERE products.product_id = cart.product_id AND cart.user_id = ?"
+        params = (user_id, )
+        my_ecommerce_db.execute_query(q, params)
+        products = my_ecommerce_db.cursor.fetchall()
+        total_price = 0
+        for row in products:
+            total_price += row[2]
 
-    q = "SELECT products.product_id, products.name, products.price, products.image FROM products, cart WHERE products.product_id = cart.product_id AND cart.user_id = ?"
-    params = (user_id, )
-    my_ecommerce_db.execute_query(q, params)
-    products = my_ecommerce_db.cursor.fetchall()
-    total_price = 0
-    for row in products:
-        total_price += row[2]
+        my_ecommerce_db.close_connection()
 
-    my_ecommerce_db.close_connection()
-
-    return render_template("cart.html", products = products, totalPrice=total_price, logged_in=logged_in, firstName=first_name, noOfItems=num_items)
+        return render_template("cart.html", products = products, total_price=total_price, logged_in=logged_in, first_name=first_name, num_items=num_items)
 
 
 
@@ -295,7 +295,7 @@ def add_to_cart():
             message = "Added to cart successfully"
         except:
             my_ecommerce_db.connection.rollback()
-            message = "Error occured!"
+            message = "Error occured while adding to cart!"
 
         my_ecommerce_db.close_connection()
 
@@ -306,27 +306,28 @@ def add_to_cart():
 def remove_from_cart():
     if 'email' not in session:
         return redirect(url_for('login_form'))
-    
-    product_id = int(request.args.get('product_id'))
-    
-    # db acces:
-    my_ecommerce_db.create_connection()
-    q = "SELECT user_id FROM users WHERE email = ?"
-    params = (session['email'], )
-    user_id = my_ecommerce_db.cursor.fetchone()[0]
-
-    try:
-        q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
-        params = (user_id, product_id)
+    else:
+        product_id = int(request.args.get('product_id'))
+        
+        # db acces:
+        my_ecommerce_db.create_connection()
+        q = "SELECT user_id FROM users WHERE email = ?"
+        params = (session['email'], )
         my_ecommerce_db.execute_query(q, params)
-        message = "Removed from cart successfully"
-    except:
-        my_ecommerce_db.connection.rollback()
-        message = "Error occured!"
-    
-    my_ecommerce_db.close_connection()
+        user_id = my_ecommerce_db.cursor.fetchone()[0]
 
-    return redirect(url_for('root'))
+        try:
+            q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
+            params = (user_id, product_id)
+            my_ecommerce_db.execute_query(q, params)
+            message = "Removed from cart successfully"
+        except:
+            my_ecommerce_db.connection.rollback()
+            message = "Error occured while removing from cart!"
+        
+        my_ecommerce_db.close_connection()
+
+        return redirect(url_for('root'))
 
 
 @app.route("/product_description")
@@ -383,7 +384,7 @@ def add_item_to_store():
             message = "Added item to store successfully"
         except:
             my_ecommerce_db.connection.rollback()
-            message = "Error occured!"
+            message = "Error occured while adding item to store!"
             
         my_ecommerce_db.close_connection()
 
@@ -415,10 +416,10 @@ def remove_item_from_store():
         q = "DELETE FROM products WHERE product_id = ?"
         params = (product_id, )
         my_ecommerce_db.execute_query(q, params)
-        message = "Deleted successsfully"
+        message = "Store item deleted successsfully"
     except:
         my_ecommerce_db.connection.rollback()
-        message = "Error occured"
+        message = "Error occured while deleting item from store!"
 
     my_ecommerce_db.close_connection()
 

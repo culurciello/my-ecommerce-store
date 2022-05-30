@@ -21,7 +21,7 @@
 	</div>
 	{% else %}
 	<div class="dropdown">
-		<button class="dropbtn">Hello, <br>{{first_name}}</button>
+		<button class="dropbtn">Hello, <br>{{ first_name }}</button>
 		<div class="dropdown-content">
 			<a href="/account/orders">Your orders</a>
 			<a href="/account/profile">Your profile</a>
@@ -33,7 +33,7 @@
 	<div id="cart">
 		<a class="link" href="/cart">
 			<img src={{url_for('static', filename='images/shopping_cart.jpg')}} id="cartIcon" />
-			CART {{num_items}}
+			CART {{ num_items }}
 		</a>
 	</div>
 </div>
@@ -47,18 +47,18 @@
 				<img src={{ row[3] }} id="image"/>
 			</div>
 			<div id="itemName">
-				<span id="itemNameTag">{{row[1]}}</span><br>
+				<span id="itemNameTag">{{ row[1] }}</span><br>
 				In stock<br>
 				<a href="/remove_from_cart?product_id={{row[0]}}">Remove</a>
 			</div>
 			<div id="itemPrice">
-				${{row[2]}}
+				${{ row[2] }}
 			</div>
 		</div>
 		{% endfor %}
 		<hr id="seperator">
 		<div id="total">
-			<span id="subtotal">Subtotal</span> : ${{total_price}}
+			<span id="subtotal">Subtotal</span> : ${{ total_price }}
 		</div>
 	</div>
 </div>
