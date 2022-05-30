@@ -51,7 +51,7 @@ class ecommerce_db:
         self.create_connection()
         self.execute_query(self.create_users_table)
         self.execute_query(self.create_products_table)
-        self.execute_query(self.create_ucart_table)
+        self.execute_query(self.create_cart_table)
         self.execute_query(self.create_categories_table)
         self.connection.close()
 

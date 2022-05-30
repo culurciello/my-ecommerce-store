@@ -44,12 +44,12 @@
 		<div>
 			<hr id="seperator">
 			<div id="itemImage">
-				<img src={{url_for('static', filename='uploads/'+row[3])}} id="image"/>
+				<img src={{ row[3] }} id="image"/>
 			</div>
 			<div id="itemName">
 				<span id="itemNameTag">{{row[1]}}</span><br>
 				In stock<br>
-				<a href="/removeFromCart?productId={{row[0]}}">Remove</a>
+				<a href="/remove_from_cart?product_id={{row[0]}}">Remove</a>
 			</div>
 			<div id="itemPrice">
 				${{row[2]}}

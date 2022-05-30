@@ -1,0 +1,8 @@
+{ 
+  "name":"Wave t-shirt",
+  "price":10.0,
+  "description":"a t-shirt with a wave on it",
+  "stock":5
+}
+
+

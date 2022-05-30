@@ -1,0 +1,6 @@
+{ 
+  "name":"Sriracha peas",
+  "price":2.99,
+  "description":"gourmet sriracha flavored peas",
+  "stock":15
+}

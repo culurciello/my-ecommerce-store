@@ -1,0 +1,6 @@
+{ 
+  "name":"Impact wrench",
+  "price":199.0,
+  "description":"strong and powerful impact wrench for your garage",
+  "stock":2
+}

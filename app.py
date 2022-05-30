@@ -3,15 +3,17 @@
 
 # inspired by: https://github.com/HarshShah1997/Shopping-Cart
 
+import os
+import sqlite3
+import hashlib
+from werkzeug.utils import secure_filename
 from flask import *
 from ecommerce_db import ecommerce_db
-import sqlite3, hashlib, os
-from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 my_ecommerce_db_filename = "my_ecommerce.db"
 app.secret_key = 'my ecommerce store'
-UPLOAD_FOLDER = 'static/uploads'
+UPLOAD_FOLDER = 'uploads/'
 ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -258,7 +260,7 @@ def cart():
     my_ecommerce_db.execute_query(q, params)
     user_id = my_ecommerce_db.cursor.fetchone()[0]
 
-    q = "SELECT products.productId, products.name, products.price, products.image FROM products, kart WHERE products.productId = kart.productId AND kart.userId = ?"
+    q = "SELECT products.product_id, products.name, products.price, products.image FROM products, cart WHERE products.product_id = cart.product_id AND cart.user_id = ?"
     params = (user_id, )
     my_ecommerce_db.execute_query(q, params)
     products = my_ecommerce_db.cursor.fetchall()
@@ -272,8 +274,8 @@ def cart():
 
 
 
-@app.route("/addToCart")
-def addToCart():
+@app.route("/add_to_cart")
+def add_to_cart():
     if 'email' not in session:
         return redirect(url_for('login_form'))
     else:
@@ -282,6 +284,7 @@ def addToCart():
         # db acces:
         my_ecommerce_db.create_connection()
         q = "SELECT user_id FROM users WHERE email = ?"
+        params = (session['email'], )
         my_ecommerce_db.execute_query(q, params)
         user_id = my_ecommerce_db.cursor.fetchone()[0]
 
@@ -299,32 +302,148 @@ def addToCart():
         return redirect(url_for('root'))
 
 
-@app.route("/removeFromCart")
-def removeFromCart():
+@app.route("/remove_from_cart")
+def remove_from_cart():
     if 'email' not in session:
         return redirect(url_for('login_form'))
-
-    email = session['email']
+    
     product_id = int(request.args.get('product_id'))
     
     # db acces:
     my_ecommerce_db.create_connection()
     q = "SELECT user_id FROM users WHERE email = ?"
-    params = (email, )
+    params = (session['email'], )
     user_id = my_ecommerce_db.cursor.fetchone()[0]
 
-        try:
-            q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
-            params = (user_id, product_id)
-            my_ecommerce_db.execute_query(q, params)
-            message = "Removed from cart successfully"
-        except:
-            my_ecommerce_db.connection.rollback()
-            message = "Error occured!"
+    try:
+        q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
+        params = (user_id, product_id)
+        my_ecommerce_db.execute_query(q, params)
+        message = "Removed from cart successfully"
+    except:
+        my_ecommerce_db.connection.rollback()
+        message = "Error occured!"
     
     my_ecommerce_db.close_connection()
 
     return redirect(url_for('root'))
+
+
+@app.route("/product_description")
+def product_description():
+    logged_in, first_name, num_items = get_login_info()
+    product_id = request.args.get('product_id')
+
+    # db acces:
+    my_ecommerce_db.create_connection()
+    q = "SELECT product_id, name, price, description, image, stock FROM products WHERE product_id = ?"
+    params = (product_id, )
+    my_ecommerce_db.execute_query(q, params)
+    product_data = my_ecommerce_db.cursor.fetchone()
+    my_ecommerce_db.close_connection()
+
+    return render_template("product_description.html", data=product_data, loggedIn=logged_in, first_name=first_name, num_items=num_items)
+
+
+# add items to store:
+@app.route("/add_to_store")
+def admin():
+    # db acces:
+    my_ecommerce_db.create_connection()
+    q = "SELECT category_id, name FROM categories"
+    my_ecommerce_db.execute_query(q)
+    categories = my_ecommerce_db.cursor.fetchall()
+    my_ecommerce_db.close_connection()
+
+    return render_template('store_add.html', categories=categories)
+
+
+@app.route("/add_item_to_store", methods=["GET", "POST"])
+def add_item_to_store():
+    if request.method == "POST":
+        name = request.form['name']
+        price = float(request.form['price'])
+        description = request.form['description']
+        stock = int(request.form['stock'])
+        category_id = int(request.form['category'])
+
+        #Uploading image procedure
+        image = request.files['image']
+        if image and allowed_file(image.filename):
+            filename = secure_filename(image.filename)
+            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        imagename = filename
+
+        # db acces:
+        my_ecommerce_db.create_connection()
+        try:
+            q = "INSERT INTO products (name, price, description, image, stock, category_id) VALUES (?, ?, ?, ?, ?, ?)"
+            params = (name, price, description, imagename, stock, category_id)
+            my_ecommerce_db.execute_query(q, params)
+            message = "Added item to store successfully"
+        except:
+            my_ecommerce_db.connection.rollback()
+            message = "Error occured!"
+            
+        my_ecommerce_db.close_connection()
+
+        print(mesage)
+        
+        return redirect(url_for('root'))
+
+
+
+@app.route("/remove_from_store")
+def remove_from_store():
+    # db acces:
+    my_ecommerce_db.create_connection()
+    q = "SELECT product_id, name, price, description, image, stock FROM products"
+    my_ecommerce_db.execute_query(q)
+    data = my_ecommerce_db.cursor.fetchall()
+    my_ecommerce_db.close_connection()
+
+    return render_template('store_remove.html', data=data)
+
+
+@app.route("/remove_item_from_store")
+def remove_item_from_store():
+    product_id = request.args.get('product_id')
+
+    # db acces:
+    my_ecommerce_db.create_connection()
+    try:
+        q = "DELETE FROM products WHERE product_id = ?"
+        params = (product_id, )
+        my_ecommerce_db.execute_query(q, params)
+        message = "Deleted successsfully"
+    except:
+        my_ecommerce_db.connection.rollback()
+        message = "Error occured"
+
+    my_ecommerce_db.close_connection()
+
+    print(message)
+    
+    return redirect(url_for('root'))
+
+
+@app.route("/category_display")
+def category_display():
+        logged_in, first_name, num_items = get_login_info()
+        category_id = request.args.get("category_id")
+        
+        # db acces:
+        my_ecommerce_db.create_connection()
+        q = "SELECT products.product_id, products.name, products.price, products.image, categories.name FROM products, categories WHERE products.category_id = categories.category_id AND categories.category_id = ?"
+        params = (category_id, )
+        my_ecommerce_db.execute_query(q, params)
+        data = my_ecommerce_db.cursor.fetchall()
+        my_ecommerce_db.close_connection()
+        
+        category_name = data[0][4]
+        data = parse(data)
+        
+        return render_template('category_display.html', data=data, loggedIn=logged_in, firstName=first_name, num_items=num_items, category_name=category_name)
 
 
 

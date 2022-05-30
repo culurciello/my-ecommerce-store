@@ -1,0 +1,6 @@
+{ 
+  "name":"Beef broth",
+  "price":1.50,
+  "description":"nice beef broth",
+  "stock":10
+}
