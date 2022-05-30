@@ -4,7 +4,7 @@
 <title>Add to Store</title>
 </head>
 <body>
-<h2>Add items</h2>
+<h2>Add item to store</h2>
 <form action="/add_item_to_store" method="POST" enctype="multipart/form-data">
 	Name: <input type="text" name="name"><br>
 	Price: <input type="text" name="price"><br>
@@ -13,7 +13,7 @@
 	Stock: <input type="text" name="stock"><br>
 	Category: <select name="category">
 		{% for row in categories %}
-			<option value="{{row[0]}}">{{row[1]}}</option>
+			<option value="{{ row[0] }}">{{ row[1] }}</option>
 		{% endfor %}
 	</select><br>
 	<input type="submit">

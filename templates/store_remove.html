@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>Remove from Store</title>
+<title>Remove items from Store</title>
 <link rel="stylesheet" href={{url_for('static', filename='css/remove.css')}}>
 </link>
 </head>
@@ -13,7 +13,7 @@
 		<td>
 			<a href="/remove_item_from_store?product_id={{row[0]}}">
 			{% if i == 4 %}
-				<img src={{ url_for('static', filename='uploads/' + row[i]) }} id="item_image" />
+				<img src={{ row[i] }} id="item_image" />
 			{% else %}
 				{{row[i]}}
 			{% endif %}

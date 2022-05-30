@@ -1,8 +1,6 @@
 # e-commerce store template
 # E. Culurciello, May 2022
 
-# inspired by: https://github.com/HarshShah1997/Shopping-Cart
-
 import os
 import sqlite3
 import hashlib
