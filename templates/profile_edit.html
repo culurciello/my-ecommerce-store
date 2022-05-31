@@ -1,7 +1,7 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>Edit Profile </title>
+<title> My e-commerce Store - Edit Profile </title>
 <link rel="stylesheet" href={{ url_for('static', filename='css/editProfile.css') }} />
 <link rel="stylesheet" href={{ url_for('static', filename='css/topStyle.css') }} />
 </head>
@@ -39,7 +39,7 @@
 </div>
 
 <div class="display">
-	<h2>Edit profile</h2>
+	<h2> Edit profile </h2>
 	<form action="/profile_update" method="POST">
 		<p>Email:<input type="email" name="email" value={{profile_data[1]}} readonly="readonly"></p>
 		<p>First Name:<input type="text" name="first_name" value={{profile_data[2]}}></p>

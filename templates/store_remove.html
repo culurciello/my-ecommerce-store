@@ -1,11 +1,12 @@
 <!DOCTYPE HTML>
 <html>
 <head>
-<title>Remove items from Store</title>
+<title> My e-commerce Store - remove item to Store </title>
 <link rel="stylesheet" href={{url_for('static', filename='css/remove.css')}}>
 </link>
 </head>
 <body>
+<h2> Remove item to Store </h2>
 <table>
 	{% for i in range(6) %}
 	<tr>
@@ -15,7 +16,7 @@
 			{% if i == 4 %}
 				<img src={{ row[i] }} id="item_image" />
 			{% else %}
-				{{row[i]}}
+				{{ row[i] }}
 			{% endif %}
 			</a>
 		</td>

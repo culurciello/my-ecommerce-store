@@ -1,10 +1,11 @@
 <html>
 <head>
-<title>Registration</title>
+<title> My e-commerce Store - User Registration </title>
 <script type="text/javascript" src="{{ url_for('static', filename = 'js/validate_form.js') }}">
 </script>
 </head>
 <body>
+<h2> User registration </h2>
 <form action="/register" method="POST" onsubmit="return validate()">
     <p>Email: <input type="email" name="email"></p>
 

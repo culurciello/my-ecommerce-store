@@ -39,13 +39,13 @@
 </div>
 
 <div>
-	<h2>Showing all products of Category {{category_name}}:</h2>
+	<h2>Showing all products of category: <strong>{{category_name}}</strong></h2>
 	{% for item_data in data %}
 	<table>
 		<tr id="product_name">
 			{% for row in item_data %}
 			<td>
-				{{row[1]}}
+				{{ row[1] }}
 			</td>
 			{% endfor %}
 		</tr>
@@ -61,7 +61,7 @@
 		<tr id="product_price">
 			{% for row in item_data %}
 			<td>
-				${{row[2]}}
+				${{ row[2] }}
 			</td>
 			{% endfor %}
 		</tr>
