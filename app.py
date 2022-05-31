@@ -215,6 +215,13 @@ def password_change():
         return render_template("password_change.html")
 
 
+@app.route("/account/orders")
+def account_orders():
+    # TBD
+    message = "Not implemented yet!"
+    return render_template('account_orders.html', message=message)
+
+
 @app.route("/profile_update", methods=["GET", "POST"])
 def profile_update():
     if request.method == 'POST':
@@ -245,6 +252,7 @@ def profile_update():
         logged_in, first_name, num_items = get_login_info()
 
         return render_template("profile_home.html", logged_in=logged_in, first_name=first_name, num_items=num_items)
+
 
 
 @app.route("/cart")
