@@ -1,5 +1,7 @@
 # my-ecommerce-store
  
+![screenshot](static/images/screenshot.jpg)
+
 An e-commerce website with users, items, shopping cart, etc. based on python and Flask.
 
 You can create user profiles, change profiles, add and remove items to store, add and remove items to user cart.
