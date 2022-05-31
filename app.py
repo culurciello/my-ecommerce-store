@@ -45,10 +45,13 @@ def is_valid(email, password):
     my_ecommerce_db.execute_query(q)
     data = my_ecommerce_db.cursor.fetchall()
     my_ecommerce_db.close_connection()
+    
     for row in data:
         if row[0] == email and row[1] == hashlib.md5(password.encode()).hexdigest():
             return True
+    
     return False
+
 
 def parse(data):
     ans = []
@@ -61,10 +64,11 @@ def parse(data):
             curr.append(data[i])
             i += 1
         ans.append(curr)
+    
     return ans
 
-# app routes:
 
+# app routes:
 @app.route("/")
 def root():
     logged_in, first_name, num_items = get_login_info()
@@ -444,6 +448,12 @@ def category_display():
         
         return render_template('category_display.html', data=data, loggedIn=logged_in, firstName=first_name, num_items=num_items, category_name=category_name)
 
+
+@app.route("/checkout")
+def checkout():
+    # TBD
+    message = "Not implemented yet!"
+    return render_template('checkout.html', message=message)
 
 
 if __name__ == '__main__':
