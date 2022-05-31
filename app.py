@@ -2,45 +2,57 @@
 # E. Culurciello, May 2022
 
 import os
-import sqlite3
+# import sqlite3
+import sqlalchemy as db
 import hashlib
 from werkzeug.utils import secure_filename
 from flask import *
 from ecommerce_db import ecommerce_db
 
 app = Flask(__name__)
-my_ecommerce_db_filename = "my_ecommerce.db"
+my_ecommerce_db_filename = "sqlite:///my_ecommerce.db"
 app.secret_key = 'my ecommerce store'
 UPLOAD_FOLDER = 'uploads/'
 ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
+# session.clear() # clear the old session if any!
 
 # my database:
 my_ecommerce_db = ecommerce_db(my_ecommerce_db_filename)
 
 def get_login_info():
-    with my_ecommerce_db.create_connection():
-        if 'email' not in session:
-            logged_in = False
-            first_name = ''
-            num_items = 0
-        else:
-            logged_in = True
-            q = "SELECT user_id, first_name FROM users WHERE email = ?"
-            my_ecommerce_db.execute_query(q, (session['email'], ))
-            user_id, first_name = my_ecommerce_db.cursor.fetchone()
-            q = "SELECT count(product_id) FROM cart WHERE user_id = ?"
-            my_ecommerce_db.execute_query(q, (user_id, ))
-            num_items = my_ecommerce_db.cursor.fetchone()[0]
+    # with my_ecommerce_db.create_connection():
+    connection = my_ecommerce_db.engine.connect()
+    if 'email' not in session:
+        logged_in = False
+        first_name = ''
+        num_items = 0
+    else:
+        logged_in = True
+        query = db.select(
+            [my_ecommerce_db.users.columns.user_id, 
+             my_ecommerce_db.users.columns.first_name]
+        ).where(my_ecommerce_db.users.columns.email == session['email'])
 
-    my_ecommerce_db.close_connection()
+        r = connection.execute(query).fetchone()
+        print(r)
+        crap
+
+        #q = "SELECT user_id, first_name FROM users WHERE email = ?"
+        #my_ecommerce_db.execute_query(q, (session['email'], ))
+        #user_id, first_name = my_ecommerce_db.cursor.fetchone()
+        #q = "SELECT count(product_id) FROM cart WHERE user_id = ?"
+        #my_ecommerce_db.execute_query(q, (user_id, ))
+        #num_items = my_ecommerce_db.cursor.fetchone()[0]
+
+    # my_ecommerce_db.close_connection()
 
     return (logged_in, first_name, num_items)
 
 
 def is_valid(email, password):
-    my_ecommerce_db.create_connection()
+    # my_ecommerce_db.create_connection()
+    connection = my_ecommerce_db.engine.connect()
     q = "SELECT email, password FROM users"
     my_ecommerce_db.execute_query(q)
     data = my_ecommerce_db.cursor.fetchall()
@@ -72,17 +84,32 @@ def parse(data):
 @app.route("/")
 def root():
     logged_in, first_name, num_items = get_login_info()
-    my_ecommerce_db.create_connection()
+    # my_ecommerce_db.create_connection()
+    connection = my_ecommerce_db.engine.connect()
+    query = db.select(
+            [my_ecommerce_db.products.columns.product_id,
+             my_ecommerce_db.products.columns.name,
+             my_ecommerce_db.products.columns.price,
+             my_ecommerce_db.products.columns.description,
+             my_ecommerce_db.products.columns.image,
+             my_ecommerce_db.products.columns.stock]
+        )
+    item_data = connection.execute(query).fetchall()
+    # q = "SELECT product_id, name, price, description, image, stock FROM products"
+    # my_ecommerce_db.execute_query(q)
+    # item_data = my_ecommerce_db.cursor.fetchall()
 
-    q = "SELECT product_id, name, price, description, image, stock FROM products"
-    my_ecommerce_db.execute_query(q)
-    item_data = my_ecommerce_db.cursor.fetchall()
+    query = db.select(
+            [my_ecommerce_db.categories.columns.category_id,
+             my_ecommerce_db.categories.columns.name]
+        )
+    category_data = connection.execute(query).fetchall()
+    # q = "SELECT category_id, name FROM categories"
+    # my_ecommerce_db.execute_query(q)
+    # category_data = my_ecommerce_db.cursor.fetchall()
 
-    q = "SELECT category_id, name FROM categories"
-    my_ecommerce_db.execute_query(q)
-    category_data = my_ecommerce_db.cursor.fetchall()
-
-    my_ecommerce_db.close_connection()
+    # my_ecommerce_db.close_connection()
+    connection.close()
 
     item_data = parse(item_data)   
     

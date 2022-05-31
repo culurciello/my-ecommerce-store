@@ -2,10 +2,11 @@
 
 import os
 import json
+import sqlalchemy as db
 from ecommerce_db import ecommerce_db
 
 # my database:
-my_ecommerce_db_filename = "my_ecommerce.db"
+my_ecommerce_db_filename = "sqlite:///my_ecommerce.db"
 my_ecommerce_db = ecommerce_db(my_ecommerce_db_filename)
 
 # items directory:
@@ -15,7 +16,7 @@ rootdir = 'static/store_items/'
 category_num = 0
 
 # db acces:
-my_ecommerce_db.create_connection()
+connection = my_ecommerce_db.engine.connect()
 
 for category in os.listdir(rootdir):
     cat_dir = os.path.join(rootdir, category)
@@ -26,12 +27,11 @@ for category in os.listdir(rootdir):
         category_num += 1
         # insert category into db:
         try:
-            q = "INSERT INTO categories (category_id, name) VALUES (?, ?)"
-            params = (category_num, category)
-            my_ecommerce_db.execute_query(q, params)
+            query = db.insert(my_ecommerce_db.categories).values(category_id=category_num, name=category)
+            connection.execute(query)
             message = "Added category to store successfully"
         except:
-            my_ecommerce_db.connection.rollback()
+            connection.rollback()
             message = "Error occured!"
 
         for item in os.listdir(cat_dir):
@@ -54,15 +54,20 @@ for category in os.listdir(rootdir):
 
                 # insert item into db:
                 try:
-                    q = "INSERT INTO products (name, price, description, image, stock, category_id) VALUES (?, ?, ?, ?, ?, ?)"
-                    params = (name, price, description, imagename, stock, category_id)
-                    my_ecommerce_db.execute_query(q, params)
+                    query = db.insert(my_ecommerce_db.products).values(
+                        name=name,
+                        price=price,
+                        description=description,
+                        image=imagename,
+                        stock=stock,
+                        category_id=category_id)
+                    connection.execute(query)
                     message = "Added item to store successfully"
                 except:
-                    my_ecommerce_db.connection.rollback()
+                    connection.rollback()
                     message = "Error occured!"
 
                 print(message)
 
-my_ecommerce_db.close_connection()
+connection.close()
 # print('categories', categories)

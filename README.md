@@ -46,6 +46,7 @@ Initialize store items into database:
 python store_db.py
 ```
 
+Note: if this fails, remove the database file `my_ecommerce.db` but be careful not to delete other users tables. Make a copy first!
 
 Web serving:
 
