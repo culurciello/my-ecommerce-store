@@ -2,11 +2,12 @@
 # E. Culurciello, May 2022
 
 import os
-import sqlalchemy as db
-from sqlalchemy_utils import database_exists
 import hashlib
+import sqlalchemy as db
 from werkzeug.utils import secure_filename
-from flask import Flask, session
+from sqlalchemy_utils import database_exists
+from flask import Flask, session, render_template, redirect, request, url_for
+
 from ecommerce_db import ecommerce_db
 
 app = Flask(__name__)
@@ -16,7 +17,6 @@ app.secret_key = 'my ecommerce store'
 UPLOAD_FOLDER = 'uploads/'
 ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png', 'gif'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-# session.clear() # clear the old session if any!
 
 db_exists = False
 if database_exists(my_db_filename):
@@ -333,23 +333,9 @@ def cart():
         products = connection.execute(query).fetchall()
         connection.close() 
 
-
-        # my_db.create_connection()
-        # q = "SELECT user_id FROM users WHERE email = ?"
-        # params = (email, )
-        # my_db.execute_query(q, params)
-        # user_id = my_db.cursor.fetchone()[0]
-
-        #q = "SELECT products.product_id, products.name, products.price, products.image FROM products, cart WHERE products.product_id = cart.product_id AND cart.user_id = ?"
-        #params = (user_id, )
-        #my_db.execute_query(q, params)
-        # products = my_db.cursor.fetchall()
-
         total_price = 0
         for row in products:
             total_price += row[2]
-
-        # my_db.close_connection()
 
         return render_template("cart.html", products = products, total_price=total_price, logged_in=logged_in, first_name=first_name, num_items=num_items)
 
@@ -367,28 +353,17 @@ def add_to_cart():
         query = db.select([users_c.user_id]).where(users_c.email == session['email'])
         user_id = connection.execute(query).fetchone()[0]
 
-        # my_db.create_connection()
-        # q = "SELECT user_id FROM users WHERE email = ?"
-        # params = (session['email'], )
-        # my_db.execute_query(q, params)
-        # user_id = my_db.cursor.fetchone()[0]
-
         try:
             query = db.insert(my_db.cart).values(
                     user_id=user_id,
                     product_id=product_id
                 )
             connection.execute(query)
-            # q = "INSERT INTO cart (user_id, product_id) VALUES (?, ?)"
-            # params = (user_id, product_id)
-            # my_db.execute_query(q, params)
             message = "Added to cart successfully"
         except:
-            # my_db.connection.rollback()
             message = "Error occured while adding to cart!"
 
         connection.close()
-        # my_db.close_connection()
 
         return redirect(url_for('root'))
 
@@ -450,14 +425,6 @@ def product_description():
         ]).where(products_c.product_id == product_id)
     product_data = connection.execute(query).fetchone()
     connection.close()
-
-
-    # my_db.create_connection()
-    #q = "SELECT product_id, name, price, description, image, stock FROM products WHERE product_id = ?"
-    # params = (product_id, )
-    # my_db.execute_query(q, params)
-    # product_data = my_db.cursor.fetchone()
-    # my_db.close_connection()
 
     return render_template("product_description.html", data=product_data, loggedIn=logged_in, first_name=first_name, num_items=num_items)
 
