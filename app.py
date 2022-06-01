@@ -382,28 +382,16 @@ def remove_from_cart():
             ]).where(users_c.email == session['email'])
         user_id = connection.execute(query).fetchone()[0]
 
-
-        # my_db.create_connection()
-        # q = "SELECT user_id FROM users WHERE email = ?"
-        # params = (session['email'], )
-        # my_db.execute_query(q, params)
-        # user_id = my_db.cursor.fetchone()[0]
-
         try:
             query = db.delete(my_db.cart).where(
-                (cart_c.user_id == user_id and
-                 cart_c.product_id == product_id) )
+                cart_c.user_id == user_id).where(
+                cart_c.product_id == product_id)
             connection.execute(query)
-            #q = "DELETE FROM cart WHERE user_id = ? AND product_id = ?"
-            # params = (user_id, product_id)
-            # my_db.execute_query(q, params)
             message = "Removed from cart successfully"
         except:
-            # my_db.connection.rollback()
             message = "Error occured while removing from cart!"
         
         connection.close()
-        # my_db.close_connection()
 
         return redirect(url_for('root'))
 
