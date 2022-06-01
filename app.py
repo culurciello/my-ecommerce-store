@@ -329,7 +329,9 @@ def cart():
                 products_c.name,
                 products_c.price,
                 products_c.image
-            ]).where( (products_c.product_id == cart_c.product_id and cart_c.user_id == user_id) )
+            ]).where(
+                products_c.product_id == cart_c.product_id).where(
+                cart_c.user_id == user_id)
         products = connection.execute(query).fetchall()
         connection.close() 
 
@@ -421,11 +423,11 @@ def product_description():
 @app.route("/add_to_store")
 def admin():
     # db acces:
-    my_db.create_connection()
+    connection = my_db.engine.connect()
     q = "SELECT category_id, name FROM categories"
     my_db.execute_query(q)
     categories = my_db.cursor.fetchall()
-    my_db.close_connection()
+    connection.close()
 
     return render_template('store_add.html', categories=categories)
 
@@ -447,7 +449,7 @@ def add_item_to_store():
         imagename = filename
 
         # db acces:
-        my_db.create_connection()
+        connection = my_db.engine.connect()
         try:
             q = "INSERT INTO products (name, price, description, image, stock, category_id) VALUES (?, ?, ?, ?, ?, ?)"
             params = (name, price, description, imagename, stock, category_id)
@@ -457,7 +459,7 @@ def add_item_to_store():
             my_db.connection.rollback()
             message = "Error occured while adding item to store!"
             
-        my_db.close_connection()
+        connection.close()
 
         print(mesage)
         
@@ -468,11 +470,11 @@ def add_item_to_store():
 @app.route("/remove_from_store")
 def remove_from_store():
     # db acces:
-    my_db.create_connection()
+    connection = my_db.engine.connect()
     q = "SELECT product_id, name, price, description, image, stock FROM products"
     my_db.execute_query(q)
     data = my_db.cursor.fetchall()
-    my_db.close_connection()
+    connection.close()
 
     return render_template('store_remove.html', data=data)
 
@@ -482,17 +484,16 @@ def remove_item_from_store():
     product_id = request.args.get('product_id')
 
     # db acces:
-    my_db.create_connection()
+    connection = my_db.engine.connect()
     try:
         q = "DELETE FROM products WHERE product_id = ?"
         params = (product_id, )
         my_db.execute_query(q, params)
         message = "Store item deleted successsfully"
     except:
-        my_db.connection.rollback()
         message = "Error occured while deleting item from store!"
 
-    my_db.close_connection()
+    connection.close()
 
     print(message)
     
@@ -505,12 +506,25 @@ def category_display():
         category_id = request.args.get("category_id")
         
         # db acces:
-        my_db.create_connection()
-        q = "SELECT products.product_id, products.name, products.price, products.image, categories.name FROM products, categories WHERE products.category_id = categories.category_id AND categories.category_id = ?"
-        params = (category_id, )
-        my_db.execute_query(q, params)
-        data = my_db.cursor.fetchall()
-        my_db.close_connection()
+        connection = my_db.engine.connect()
+        query = db.select([
+                products_c.product_id,
+                products_c.name,
+                products_c.price,
+                products_c.image,
+                categories_c.name
+            ]).where(
+                products_c.category_id == categories_c.category_id
+            ).where(
+                categories_c.category_id == category_id
+            )
+        data = connection.execute(query).fetchall()
+
+        #q = "SELECT products.product_id, products.name, products.price, products.image, categories.name FROM products, categories WHERE products.category_id = categories.category_id AND categories.category_id = ?"
+        #params = (category_id, )
+        #my_db.execute_query(q, params)
+        # data = my_db.cursor.fetchall()
+        connection.close()
         
         category_name = data[0][4]
         data = parse(data)
