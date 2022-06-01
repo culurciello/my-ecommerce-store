@@ -6,6 +6,8 @@ An e-commerce website with users, items, shopping cart, etc. based on python and
 
 You can create user profiles, change profiles, add and remove items to store, add and remove items to user cart.
 
+This version uses SQLAlchemy to interface to the e-commerce store database.
+
 
 ## Store items:
 
@@ -38,25 +40,20 @@ the data in `data.txt` is a JSON as follows:
 
 ## Run:
 
-Before serving, you initialize the store database from `static/store_items`. Or you can add / remove items online with: `http://127.0.0.1:5000/add_to_store` or `http://127.0.0.1:5000/remove_from_store` (clock on items to remove them from the store).
-
-Initialize store items into database:
-
-```
-python store_db.py
-```
-
-Note: if this fails, remove the database file `my_ecommerce.db` but be careful not to delete other users tables. Make a copy first!
-
 Web serving:
 
 ```
 python app.py
 ```
 
+Note: Before serving, the app initializes the store database from `static/store_items`. You can add / remove items online with: `http://127.0.0.1:5000/add_to_store` or `http://127.0.0.1:5000/remove_from_store` (clock on items to remove them from the store).
+
+
+You can remove the database file `my_ecommerce.db` but be careful not to delete other users tables. Make a copy first!
+
 
 ###### References:
 
 - https://www.tutorialspoint.com/sqlite/sqlite_python.htm
 - https://github.com/HarshShah1997/Shopping-Cart
-- https://www.tutorialspoint.com/sqlite/sqlite_python.htm
+- https://docs.sqlalchemy.org/en/14/index.html

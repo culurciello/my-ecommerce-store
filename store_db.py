@@ -8,6 +8,7 @@ from ecommerce_db import ecommerce_db
 # my database:
 my_ecommerce_db_filename = "sqlite:///my_ecommerce.db"
 my_ecommerce_db = ecommerce_db(my_ecommerce_db_filename)
+my_ecommerce_db.create() # creates all table!
 
 # items directory:
 rootdir = 'static/store_items/'
