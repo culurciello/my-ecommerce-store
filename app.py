@@ -15,7 +15,7 @@ my_db_filename = "sqlite:///my_ecommerce.db"
 my_db_dataset = 'static/store_items/'
 app.secret_key = 'my ecommerce store'
 UPLOAD_FOLDER = 'uploads/'
-ALLOWED_EXTENSIONS = set(['jpeg', 'jpg', 'png', 'gif'])
+ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif']
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 db_exists = False
@@ -33,6 +33,7 @@ users_c = my_db.users.columns
 products_c = my_db.products.columns
 categories_c = my_db.categories.columns
 cart_c = my_db.cart.columns
+
 
 def get_login_info():
     connection = my_db.engine.connect()
@@ -85,6 +86,15 @@ def parse(data):
     return ans
 
 
+def allowed_file(filename):
+    print(os.path.splitext(filename)[1], ALLOWED_EXTENSIONS)
+    print(os.path.splitext(filename)[1] in ALLOWED_EXTENSIONS)
+    if os.path.splitext(filename)[1] in ALLOWED_EXTENSIONS:
+        return True
+    else:
+        return False
+
+
 # app routes:
 @app.route("/")
 def root():
@@ -92,20 +102,20 @@ def root():
 
     # db access:
     connection = my_db.engine.connect()
-    query = db.select(
-            [products_c.product_id,
-             products_c.name,
-             products_c.price,
-             products_c.description,
-             products_c.image,
-             products_c.stock]
-        )
+    query = db.select([
+            products_c.product_id,
+            products_c.name,
+            products_c.price,
+            products_c.description,
+            products_c.image,
+            products_c.stock
+        ])
     item_data = connection.execute(query).fetchall()
 
-    query = db.select(
-            [categories_c.category_id,
-             categories_c.name]
-        )
+    query = db.select([
+            categories_c.category_id,
+            categories_c.name
+        ])
     category_data = connection.execute(query).fetchall()
 
     connection.close()
@@ -352,7 +362,9 @@ def add_to_cart():
 
         # db acces:
         connection = my_db.engine.connect()
-        query = db.select([users_c.user_id]).where(users_c.email == session['email'])
+        query = db.select([
+                users_c.user_id
+            ]).where(users_c.email == session['email'])
         user_id = connection.execute(query).fetchone()[0]
 
         try:
@@ -424,9 +436,11 @@ def product_description():
 def admin():
     # db acces:
     connection = my_db.engine.connect()
-    q = "SELECT category_id, name FROM categories"
-    my_db.execute_query(q)
-    categories = my_db.cursor.fetchall()
+    query = db.select([
+            categories_c.category_id, 
+            categories_c.name
+        ])
+    categories = connection.execute(query).fetchall()
     connection.close()
 
     return render_template('store_add.html', categories=categories)
@@ -441,7 +455,7 @@ def add_item_to_store():
         stock = int(request.form['stock'])
         category_id = int(request.form['category'])
 
-        #Uploading image procedure
+        # Uploading image procedure
         image = request.files['image']
         if image and allowed_file(image.filename):
             filename = secure_filename(image.filename)
@@ -451,12 +465,17 @@ def add_item_to_store():
         # db acces:
         connection = my_db.engine.connect()
         try:
-            q = "INSERT INTO products (name, price, description, image, stock, category_id) VALUES (?, ?, ?, ?, ?, ?)"
-            params = (name, price, description, imagename, stock, category_id)
-            my_db.execute_query(q, params)
+            query = db.insert(my_db.products).values(
+                    name=name,
+                    price=price,
+                    description=description,
+                    image=image,
+                    stock=stock,
+                    category_id=category_id
+                )
+            connection.execute(query)
             message = "Added item to store successfully"
         except:
-            my_db.connection.rollback()
             message = "Error occured while adding item to store!"
             
         connection.close()
@@ -471,9 +490,15 @@ def add_item_to_store():
 def remove_from_store():
     # db acces:
     connection = my_db.engine.connect()
-    q = "SELECT product_id, name, price, description, image, stock FROM products"
-    my_db.execute_query(q)
-    data = my_db.cursor.fetchall()
+    query = db.select([
+            products_c.product_id,
+            products_c.name,
+            products_c.price,
+            products_c.description,
+            products_c.image,
+            products_c.stock
+        ])
+    data = connection.execute(query).fetchall()
     connection.close()
 
     return render_template('store_remove.html', data=data)
@@ -486,9 +511,8 @@ def remove_item_from_store():
     # db acces:
     connection = my_db.engine.connect()
     try:
-        q = "DELETE FROM products WHERE product_id = ?"
-        params = (product_id, )
-        my_db.execute_query(q, params)
+        query = db.delete(my_db.products).where(products_c.product_id == product_id)
+        connection.execute(query)
         message = "Store item deleted successsfully"
     except:
         message = "Error occured while deleting item from store!"
@@ -519,11 +543,6 @@ def category_display():
                 categories_c.category_id == category_id
             )
         data = connection.execute(query).fetchall()
-
-        #q = "SELECT products.product_id, products.name, products.price, products.image, categories.name FROM products, categories WHERE products.category_id = categories.category_id AND categories.category_id = ?"
-        #params = (category_id, )
-        #my_db.execute_query(q, params)
-        # data = my_db.cursor.fetchall()
         connection.close()
         
         category_name = data[0][4]
