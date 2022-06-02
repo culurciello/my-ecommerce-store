@@ -60,6 +60,7 @@ class ecommerce_db:
         # create the tables:
         self.metadata_obj.create_all(self.engine)
 
+
     def add_dataset_to_store(self, rootdir):
         # categories = []
 
