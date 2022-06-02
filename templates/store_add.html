@@ -5,12 +5,12 @@
 </head>
 <body>
 <h2> Add item to Store </h2>
+
+<p>Note: use full path for txt file: "/your/full/path/static/store_items/tools/impact_wrench/data.txt", for image use: "/static/store_items/tools/impact_wrench/image.jpg"</p>
+
 <form action="/add_item_to_store" method="POST" enctype="multipart/form-data">
-	Name: <input type="text" name="name"><br>
-	Price: <input type="text" name="price"><br>
-	Description: <textarea name="description" rows=3 cols="40"></textarea><br>
-	Image: <input type="file" name="image"><br>
-	Stock: <input type="text" name="stock"><br>
+	Data: <input type="text" name="datafile"><br>
+	Image: <input type="text" name="imagefile"><br>
 	Category: <select name="category">
 		{% for row in categories %}
 			<option value="{{ row[0] }}">{{ row[1] }}</option>

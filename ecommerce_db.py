@@ -96,6 +96,7 @@ class ecommerce_db:
                         # print(datafile, imagefile)
                         f = open(datafile)
                         data = json.load(f)
+                        f.close()
 
                         # load data from files:
                         name = data["name"]

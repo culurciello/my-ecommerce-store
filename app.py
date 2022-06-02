@@ -2,6 +2,7 @@
 # E. Culurciello, May 2022
 
 import os
+import json
 import hashlib
 import sqlalchemy as db
 from werkzeug.utils import secure_filename
@@ -13,10 +14,7 @@ from ecommerce_db import ecommerce_db
 app = Flask(__name__)
 my_db_filename = "sqlite:///my_ecommerce.db"
 my_db_dataset = 'static/store_items/'
-app.secret_key = 'my ecommerce store'
-UPLOAD_FOLDER = 'uploads/'
-ALLOWED_EXTENSIONS = ['.jpeg', '.jpg', '.png', '.gif']
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'my e-commerce store'
 
 db_exists = False
 if database_exists(my_db_filename):
@@ -84,15 +82,6 @@ def parse(data):
         ans.append(curr)
     
     return ans
-
-
-def allowed_file(filename):
-    print(os.path.splitext(filename)[1], ALLOWED_EXTENSIONS)
-    print(os.path.splitext(filename)[1] in ALLOWED_EXTENSIONS)
-    if os.path.splitext(filename)[1] in ALLOWED_EXTENSIONS:
-        return True
-    else:
-        return False
 
 
 # app routes:
@@ -449,18 +438,24 @@ def admin():
 @app.route("/add_item_to_store", methods=["GET", "POST"])
 def add_item_to_store():
     if request.method == "POST":
-        name = request.form['name']
-        price = float(request.form['price'])
-        description = request.form['description']
-        stock = int(request.form['stock'])
+        # getting data and image files:
+        datafile = request.form['datafile']
+        imagefile = request.form['imagefile']
+        # note category can be inferred from dir in dataset also... for now easy way:
         category_id = int(request.form['category'])
 
-        # Uploading image procedure
-        image = request.files['image']
-        if image and allowed_file(image.filename):
-            filename = secure_filename(image.filename)
-            image.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-        imagename = filename
+        # getting data from data file:
+        f = open(datafile)
+        data = json.load(f)
+        f.close()
+        # f = datafile.read()
+        # data = json.loads(f)
+
+        # load data from files:
+        name = data["name"]
+        price = float(data["price"])
+        description = data["description"]
+        stock = int(data["stock"])
 
         # db acces:
         connection = my_db.engine.connect()
@@ -469,7 +464,7 @@ def add_item_to_store():
                     name=name,
                     price=price,
                     description=description,
-                    image=image,
+                    image=imagefile,
                     stock=stock,
                     category_id=category_id
                 )
@@ -480,7 +475,7 @@ def add_item_to_store():
             
         connection.close()
 
-        print(mesage)
+        print(message)
         
         return redirect(url_for('root'))
 
