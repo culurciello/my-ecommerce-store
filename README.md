@@ -2,27 +2,31 @@
  
 ![screenshot](static/images/screenshot.jpg)
 
-An e-commerce website with users, items, shopping cart, etc. based on python and Flask.
+An e-commerce website with users, items, shopping cart, etc. based on Python, SQLAlchemy and Flask.
 
 You can create user profiles, change profiles, add and remove items to store, add and remove items to user cart.
 
-This version uses SQLAlchemy to interface to the e-commerce store database.
+This code uses SQLAlchemy to interface to the e-commerce store database.
 
 
 ## Store items:
 
-Using a simple dataset of store items in `static/store_items`. The dataset format is as follows:
+We created a simple script so you can initialize your store items, inventory, description and stock.
+
+We use a simple dataset of store items in `static/store_items`. The dataset format is composed of two files, one JSON with item details and one image. 
+
+Details of the dataset structure are:
 
 
 ```
 Category1/
 		item11/
 				data.txt
-				image.txt
+				image.jpg
 Category2/ 
 		item21/
 				data.txt
-				image.txt
+				image.jpg
 ```
 
 the data in `data.txt` is a JSON as follows:
@@ -36,6 +40,7 @@ the data in `data.txt` is a JSON as follows:
 }
 ```
 
+The image is a picture of the item (.jpg).
 
 
 ## Run:
